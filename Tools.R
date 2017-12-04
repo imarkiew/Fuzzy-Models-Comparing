@@ -3,7 +3,7 @@ require(unbalanced)
 require(DMwR)
 require(fmsb)
 require(stats)
-source("CHI&GBML.R")
+source("CHI_GBML.R")
 
 prepare_data <- function(name_of_file, target_column_name_or_number, is_header_present, delimiter, num_of_labels, percent_of_train_examples)
 {
