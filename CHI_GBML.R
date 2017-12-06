@@ -4,7 +4,7 @@ FRBCS.CHI <- function(num_of_labels, train, X, Xrange)
 {
   method.type <- "FRBCS.CHI"
   control.FRBCS.CHI <- list(num.labels = num_of_labels, type.mf = "GAUSSIAN")
-  object.FRBCS.CHI <- frbs.learn(train[, 1:NCOL(train)], Xrange, method.type, control.FRBCS.CHI)
+  object.FRBCS.CHI <- frbs.learn(train, Xrange, method.type, control.FRBCS.CHI)
   pred <- predict(object.FRBCS.CHI, X)
   pred <- round(pred, digits = 0)
   return(pred)
