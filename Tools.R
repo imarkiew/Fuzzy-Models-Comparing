@@ -22,12 +22,14 @@ prepare_data <- function(name_of_file, target_column_name_or_number, is_header_p
     Xy[, target_column_number] <- unclass(Xy[, target_column_number])
   }
   Xy <- Xy[sample(nrow(Xy)),] 
-  sample <- sample.split(Xy, SplitRatio = percent_of_train_examples)
-  train <- subset(Xy, sample == TRUE)
+  Xy_y <- Xy[, target_column_number]
+  Xy_norm <- data.Normalization(Xy[, -target_column_number], type = "n4", normalization = "column") 
+  Xy <-Xy_norm
+  Xy$class <- Xy_y
   is_zero_present = FALSE
-  for(i in 1:NROW(train))
+  for(i in 1:NROW(Xy))
   {
-    if(train[i, target_column_number] == 0)
+    if(Xy[i, NCOL(Xy)] == 0)
     {
       is_zero_present = TRUE
       break
@@ -35,26 +37,18 @@ prepare_data <- function(name_of_file, target_column_name_or_number, is_header_p
   }
   if(is_zero_present)
   {
-    for(i in 1:NROW(train))
+    for(i in 1:NROW(Xy))
     {
-      train[i, target_column_number] <- train[i, target_column_number] + 1
+      Xy[i, NCOL(Xy)] <- Xy[i, NCOL(Xy)] + 1
     }
   }
+  Xrange <- sapply(Xy[, 1:NCOL(Xy) - 1], range)
+  sample <- sample.split(Xy, SplitRatio = percent_of_train_examples)
+  train <- subset(Xy, sample == TRUE)
   test  = subset(Xy, sample == FALSE)
-  X = subset(test, select = -target_column_number)
-  y = subset(test, select = target_column_number)
-  if(is_zero_present)
-  {
-    for(i in 1:NROW(y))
-    {
-      y[i, ] <- y[i, ] + 1
-    }
-  }
-  train_y <- train[, target_column_number]
-  rearranged_train <- train[, -target_column_number]
-  rearranged_train$class <- train_y
-  Xrange <- sapply(rearranged_train[1:NCOL(rearranged_train) - 1], range)
-  return(list(matrix(as.numeric(unlist(X)), nr=nrow(X)), y, matrix(as.numeric(unlist(rearranged_train)), nr=nrow(rearranged_train)), Xrange))
+  X = subset(test, select = -NCOL(test))
+  y = subset(test, select = NCOL(test))
+  return(list(matrix(as.numeric(unlist(X)), nr=nrow(X)), y, matrix(as.numeric(unlist(train)), nr=nrow(train)), Xrange))
 }
 
 run_tests <- function(name_of_file, target_column_name_or_number, is_header_present, is_category_numerical, delimiter, num_of_labels, percent_of_train_examples, number_of_iterations, name_of_saved_file)
