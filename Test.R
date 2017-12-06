@@ -1,4 +1,4 @@
-setwd("/home/igor/RProjects/Fuzzy-Models-Comparing")
+setwd("your_path")
 source("Tools.R")
 
 name_of_file <- "diabetes.csv"
