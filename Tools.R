@@ -3,30 +3,58 @@ require(unbalanced)
 require(DMwR)
 require(fmsb)
 require(stats)
+require(clusterSim)
 source("CHI_GBML.R")
 
-prepare_data <- function(name_of_file, target_column_name_or_number, is_header_present, delimiter, num_of_labels, percent_of_train_examples)
+prepare_data <- function(name_of_file, target_column_name_or_number, is_header_present, is_category_numerical, delimiter, num_of_labels, percent_of_train_examples)
 {
   if(is_header_present)
   {
-    Xy = read.table(name_of_file, sep = delimiter, head = TRUE) 
-    target_column_number = match(target_column_name_or_number, names(Xy))
+    Xy <- read.table(name_of_file, sep = delimiter, head = TRUE) 
+    target_column_number <- match(target_column_name_or_number, names(Xy))
   }else
   {
-    Xy = read.table(name_of_file, sep = delimiter, head = FALSE)
-    target_column_number = target_column_name_or_number
+    Xy <- read.table(name_of_file, sep = delimiter, head = FALSE)
+    target_column_number <- target_column_name_or_number
   }
-  Xy <- Xy[sample(nrow(Xy)),]
-  sample = sample.split(Xy, SplitRatio = percent_of_train_examples)
-  train = subset(Xy, sample == TRUE)
-  Xrange <- apply(as.matrix(as.data.frame(lapply(Xy[, -ncol(train)], as.numeric))), 2, range)
+  if(!is_category_numerical)
+  {
+    Xy[, target_column_number] <- unclass(Xy[, target_column_number])
+  }
+  Xy <- Xy[sample(nrow(Xy)),] 
+  sample <- sample.split(Xy, SplitRatio = percent_of_train_examples)
+  train <- subset(Xy, sample == TRUE)
+  is_zero_present = FALSE
+  for(i in 1:NROW(train))
+  {
+    if(train[i, target_column_number] == 0)
+    {
+      is_zero_present = TRUE
+      break
+    }
+  }
+  if(is_zero_present)
+  {
+    for(i in 1:NROW(train))
+    {
+      train[i, target_column_number] <- train[i, target_column_number] + 1
+    }
+  }
+  Xrange <- sapply(train[1:NCOL(train) - 1], range)
   test  = subset(Xy, sample == FALSE)
   X = subset(test, select = -target_column_number)
   y = subset(test, select = target_column_number)
-  return(list(X, y, train, Xrange))
+  if(is_zero_present)
+  {
+    for(i in 1:NROW(y))
+    {
+      y[i, ] <- y[i, ] + 1
+    }
+  }
+  return(list(matrix(as.numeric(unlist(X)), nr=nrow(X)), y, matrix(as.numeric(unlist(train)), nr=nrow(train)), Xrange))
 }
 
-run_tests <- function(name_of_file, target_column_name_or_number, is_header_present, delimiter, num_of_labels, percent_of_train_examples, number_of_iterations, name_of_saved_file)
+run_tests <- function(name_of_file, target_column_name_or_number, is_header_present, is_category_numerical, delimiter, num_of_labels, percent_of_train_examples, number_of_iterations, name_of_saved_file)
 {
   FRBCS.CHI.accuracies <- vector()
   FRBCS.CHI.scores <- vector()
@@ -34,7 +62,7 @@ run_tests <- function(name_of_file, target_column_name_or_number, is_header_pres
   FH.GBML.scores <- vector()
   for(i in 1:number_of_iterations)
   {
-    data <-prepare_data(name_of_file, target_column_name_or_number, is_header_present, delimiter, num_of_labels, percent_of_train_examples)
+    data <-prepare_data(name_of_file, target_column_name_or_number, is_header_present, is_category_numerical, delimiter, num_of_labels, percent_of_train_examples)
     X <- data[[1]]
     y <- data[[2]]
     train <- data[[3]]
