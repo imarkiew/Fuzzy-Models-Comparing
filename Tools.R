@@ -40,7 +40,6 @@ prepare_data <- function(name_of_file, target_column_name_or_number, is_header_p
       train[i, target_column_number] <- train[i, target_column_number] + 1
     }
   }
-  Xrange <- sapply(train[1:NCOL(train) - 1], range)
   test  = subset(Xy, sample == FALSE)
   X = subset(test, select = -target_column_number)
   y = subset(test, select = target_column_number)
@@ -51,7 +50,11 @@ prepare_data <- function(name_of_file, target_column_name_or_number, is_header_p
       y[i, ] <- y[i, ] + 1
     }
   }
-  return(list(matrix(as.numeric(unlist(X)), nr=nrow(X)), y, matrix(as.numeric(unlist(train)), nr=nrow(train)), Xrange))
+  train_y <- train[, target_column_number]
+  rearranged_train <- train[, -target_column_number]
+  rearranged_train$class <- train_y
+  Xrange <- sapply(rearranged_train[1:NCOL(rearranged_train) - 1], range)
+  return(list(matrix(as.numeric(unlist(X)), nr=nrow(X)), y, matrix(as.numeric(unlist(rearranged_train)), nr=nrow(rearranged_train)), Xrange))
 }
 
 run_tests <- function(name_of_file, target_column_name_or_number, is_header_present, is_category_numerical, delimiter, num_of_labels, percent_of_train_examples, number_of_iterations, name_of_saved_file)
