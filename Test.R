@@ -1,7 +1,7 @@
 setwd("/home/igor/RProjects/Fuzzy-Models-Comparing")
 source("Tools.R")
 
-name_of_file <- "iris.data"
+name_of_file <- "./Data/iris.data"
 target_column_name_or_number <- 5
 is_header_present <- FALSE
 delimiter <- ","
