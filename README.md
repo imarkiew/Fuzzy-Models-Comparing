@@ -1,2 +1,2 @@
 # Fuzzy-Models-Comparing
-Prosty program do porównywania klasyfikatorów rozmytych typu Chi oraz Ishibuchi&Nakashima.
+A simple program for comparing fuzzy classifiers like Chi and Ishibuchi & Nakashima.
